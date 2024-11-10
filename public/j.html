@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>J</title>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const j = urlParams.get("j");
+      if (j) window.location.href = `https://${j}`;
+    </script>
+  </head>
+  <body>
+    test
+  </body>
+</html>
