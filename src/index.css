@@ -1,0 +1,8 @@
+textarea {
+  min-height: 250px;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-all;
+}
