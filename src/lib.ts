@@ -1,3 +1,5 @@
+import toast from "solid-toast";
+
 export const displays = ["standalone", "browser", "minimal-ui", "fullscreen"];
 export const iconMimes = [
   "image/png",
@@ -57,6 +59,8 @@ export const updateSelfManifest = async (manifest: Manifest) => {
   const link = document.createElement("link");
   link.rel = "manifest";
   link.setAttribute("href", "data:application/json;charset=8" + src);
+
+  toast.success("Manifest updated");
 };
 
 export const mansToStr = (manifests: Manifest[]) => {
@@ -76,10 +80,16 @@ export const strToMans = (str: string) => {
       if (typeof j !== "object") {
         throw new Error("Not an object");
       }
+      const d = defaultManifest();
       const m = {
+        ...d,
         ...j,
-        ...defaultManifest(),
       };
+      Object.entries(d).forEach(([k, v]) => {
+        if (typeof m[k] !== typeof v) {
+          m[k] = v;
+        }
+      });
       if (m.icons.length === 0) {
         m.icons = [defaultIcon()];
       }

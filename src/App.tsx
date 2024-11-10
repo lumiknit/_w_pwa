@@ -36,13 +36,17 @@ const App: Component = () => {
   };
 
   const handleDel = (i: number) => {
+    const name = mans()[i].name;
     setMans((s) => s.filter((_, j) => i !== j));
     saveManifests(mans());
+    toast.success("Deleted " + name);
   };
 
   const useMan = (i: number) => {
+    const name = mans()[i].name;
     setManifest(mans()[i]);
     updateSelfManifest(mans()[i]);
+    toast.success("Using " + name);
   };
 
   onMount(() => {
