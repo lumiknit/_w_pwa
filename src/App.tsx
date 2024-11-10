@@ -15,8 +15,6 @@ import {
 import toast, { Toaster } from "solid-toast";
 
 const App: Component = () => {
-  let refRaw: HTMLTextAreaElement;
-
   const [exp, setExp] = createSignal("");
   const [manifest, setManifest] = createSignal(defaultManifest());
   const [mans, setMans] = createSignal<Manifest[]>([]);
