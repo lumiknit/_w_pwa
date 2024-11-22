@@ -4,7 +4,7 @@ export const displays = ["standalone", "browser", "minimal-ui", "fullscreen"];
 export const iconMimes = [
   "image/png",
   "image/jpeg",
-  "image/svg",
+  "image/svg+xml",
   "image/x-icon",
 ];
 

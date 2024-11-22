@@ -19,6 +19,11 @@ const App: Component = () => {
   const [manifest, setManifest] = createSignal(defaultManifest());
   const [mans, setMans] = createSignal<Manifest[]>([]);
 
+  const getIconSizeN = () => {
+    const s = manifest().icons[0]?.sizes.split("x")[0];
+    return isNaN(parseInt(s)) ? "" : parseInt(s);
+  };
+
   const handleImport = () => {
     const e = strToMans(exp());
     setMans((s) => [...e, ...s]);
@@ -33,6 +38,12 @@ const App: Component = () => {
     setMans((s) => [manifest(), ...s]);
     saveManifests(mans());
     toast.success("Inserted");
+  };
+
+  const handleClearSaved = () => {
+    setMans(() => []);
+    saveManifests(mans());
+    toast.success("Cleared");
   };
 
   const handleDel = (i: number) => {
@@ -166,14 +177,16 @@ const App: Component = () => {
           Icon Size (w/h, single int)
           <input
             type="number"
-            value={manifest().icons[0]?.sizes.split("x")[0]}
+            value={getIconSizeN()}
             onChange={(e) =>
               setManifest((s) => ({
                 ...s,
                 icons: [
                   {
                     ...s.icons[0],
-                    sizes: `${e.target.value}x${e.target.value}`,
+                    sizes: isNaN(parseInt(e.target.value))
+                      ? "any"
+                      : `${e.target.value}x${e.target.value}`,
                   },
                 ],
               }))
@@ -216,6 +229,9 @@ const App: Component = () => {
         <hr />
 
         <h2> Saved </h2>
+        <button type="reset" onClick={handleClearSaved}>
+          Clear all saved
+        </button>
 
         <For each={mans()}>
           {(m, i) => (
