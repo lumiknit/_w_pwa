@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount } from "solid-js";
+import { Component, createEffect, createSignal, For, onMount } from "solid-js";
 import {
   defaultManifest,
   displays,
@@ -13,11 +13,13 @@ import {
   updateSelfManifest,
 } from "./lib";
 import toast, { Toaster } from "solid-toast";
+import { overrideCode } from "./code";
 
 const App: Component = () => {
   const [exp, setExp] = createSignal("");
   const [manifest, setManifest] = createSignal(defaultManifest());
   const [mans, setMans] = createSignal<Manifest[]>([]);
+  const [code, setCode] = createSignal("alert('42')");
 
   const getIconSizeN = () => {
     const s = manifest().icons[0]?.sizes.split("x")[0];
@@ -64,6 +66,14 @@ const App: Component = () => {
     setMans(loadManifests());
   });
 
+  createEffect(() => {
+    const m = { ...manifest()};
+    // Replace start_url to original one
+    m.start_url = 'https://' + trimLink(m.start_url);
+    const c = overrideCode.replace("$json", JSON.stringify(m));
+    setCode(c);
+  });
+
   return (
     <>
       <Toaster />
@@ -79,17 +89,47 @@ const App: Component = () => {
           <pre>{JSON.stringify(manifest(), null, 2)}</pre>
         </label>
 
-        <button
-          onClick={() => {
-            updateSelfManifest(manifest());
-          }}
-        >
-          Update manifest
-        </button>
+        <label>
+          Apply script (copy and paste in console!)
+          <pre>{code()}</pre>
+        </label>
+        <div>
+          <button
+            onClick={() => {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(code());
+              } else {
+                const el = document.createElement("textarea");
+                el.value = code();
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand("copy");
+                document.body.removeChild(el);
+              }
+              toast.success("Copied!");
+            }}
+          >
+            Copy Code
+          </button>
 
-        <button onClick={handleSave} class="outline contrast">
-          Save
-        </button>
+          <a href={"https://" + trimLink(manifest().start_url)} target="_blank">
+            Open
+          </a>
+        </div>
+
+        <div>
+          <button
+            onClick={() => {
+              updateSelfManifest(manifest());
+            }}
+          >
+            Update manifest
+          </button>
+
+          <button onClick={handleSave} class="outline contrast">
+            Save
+          </button>
+        </div>
 
         <hr />
 
