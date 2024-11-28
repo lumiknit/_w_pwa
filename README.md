@@ -1,6 +1,8 @@
 # _w_pwa
 
-Inject site.manifest for every web pages!
+Add any site as a web app, with custom manifest!
+
+https://lumiknit.github.io/apps/pwa/
 
 ## Motivation
 
