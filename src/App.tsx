@@ -20,10 +20,24 @@ const App: Component = () => {
   const [manifest, setManifest] = createSignal(defaultManifest());
   const [mans, setMans] = createSignal<Manifest[]>([]);
   const [code, setCode] = createSignal("alert('42')");
+  const [copyToClipboard, setCopyToClipboard] = createSignal(false);
 
   const getIconSizeN = () => {
     const s = manifest().icons[0]?.sizes.split("x")[0];
     return isNaN(parseInt(s)) ? "" : parseInt(s);
+  };
+
+  const copyText = (text: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const el = document.createElement("textarea");
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
   };
 
   const handleImport = () => {
@@ -60,6 +74,11 @@ const App: Component = () => {
     setManifest(mans()[i]);
     updateSelfManifest(mans()[i]);
     toast.success("Using " + name);
+
+    if(copyToClipboard()) {
+      copyText('javascript:' + code());
+      window.open(untrimLink(mans()[i].start_url));
+    }
   };
 
   onMount(() => {
@@ -96,20 +115,20 @@ const App: Component = () => {
         <div>
           <button
             onClick={() => {
-              if (navigator.clipboard) {
-                navigator.clipboard.writeText(code());
-              } else {
-                const el = document.createElement("textarea");
-                el.value = code();
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand("copy");
-                document.body.removeChild(el);
-              }
+              copyText(code());
               toast.success("Copied!");
             }}
           >
             Copy Code
+          </button>
+          <button
+            onClick={() => {
+              console.log('javascript:' + code());
+              copyText('javascript:' + code());
+              toast.success("Copied!");
+            }}
+          >
+            Copy w/ `javascript:`
           </button>
 
           <a href={"https://" + trimLink(manifest().start_url)} target="_blank">
@@ -272,6 +291,10 @@ const App: Component = () => {
         <button type="reset" onClick={handleClearSaved}>
           Clear all saved
         </button>
+        <label>
+          <input type="checkbox" checked={copyToClipboard()} onChange={e => setCopyToClipboard(e.currentTarget.checked)} />
+          Copy and Open when Load
+        </label>
 
         <For each={mans()}>
           {(m, i) => (
