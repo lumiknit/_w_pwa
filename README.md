@@ -47,3 +47,6 @@ To solve this, I explored ways to customize site manifests for a better and more
 3. Once updated, click **Add to Home Screen** to install the web app.  
    - Note: Icons specified in the manifest may fail to load due to CORS issues, which can prevent successful addition.
 
+### Additional Notes  
+- Most issues arise from CORS restrictions. Before finalizing, use developer tools (e.g., on a PC) to verify resources like image URLs and ensure they are accessible.  
+- The history of saved manifests is stored in `localStorage`. This data may be lost, but you can use the **Export All** and **Import** buttons to back up and restore your work.
