@@ -38,16 +38,46 @@ export const defaultManifest = (): Manifest => ({
   icons: [defaultIcon()],
 });
 
+export const sanitizeManifest = (m: Object) => {
+  const d = defaultManifest();
+  const res: any = {
+    ...d,
+    ...m,
+  };
+  Object.entries(d).forEach(([k, v]) => {
+    if (typeof res[k] !== typeof v) {
+      res[k] = v;
+    }
+  });
+  if (res.icons.length === 0) {
+    res.icons = [defaultIcon()];
+  }
+  res.start_url = normalizeStartURL(res.start_url);
+  console.log(m, res);
+  return res as Manifest;
+};
+
 export const linkPrefix = "https://lumiknit.github.io/apps/pwa/j.html?j=";
 export const trimLink = (link: string) =>
   decodeURI(link.replace(linkPrefix, ""));
 export const untrimLink = (link: string) =>
   linkPrefix + encodeURI(link.replace(/https?:\/\//, ""));
 
+export const normalizeStartURL = (url: string) => {
+  url = trimLink(url.trim());
+  if (!url.startsWith("http")) {
+    url = "https://" + url;
+  }
+  return url;
+};
+
 const el = (id: string) => document.getElementById(id) as HTMLElement;
 
 export const updateSelfManifest = async (manifest: Manifest) => {
-  const src = JSON.stringify(manifest);
+  // Convert start_url to self url
+  const m = { ...manifest, start_url: untrimLink(manifest.start_url) };
+
+  const src = JSON.stringify(m);
   const blob = new Blob([src], {
     type: "application/json",
   });
@@ -57,6 +87,8 @@ export const updateSelfManifest = async (manifest: Manifest) => {
   const link = document.createElement("link");
   link.rel = "manifest";
   link.setAttribute("href", "data:application/json;charset=8" + src);
+
+  console.log("Updating manifest", m);
 
   toast.success("Manifest updated");
 };
@@ -78,19 +110,7 @@ export const strToMans = (str: string) => {
       if (typeof j !== "object") {
         throw new Error("Not an object");
       }
-      const d = defaultManifest();
-      const m = {
-        ...d,
-        ...j,
-      };
-      Object.entries(d).forEach(([k, v]) => {
-        if (typeof m[k] !== typeof v) {
-          m[k] = v;
-        }
-      });
-      if (m.icons.length === 0) {
-        m.icons = [defaultIcon()];
-      }
+      const m = sanitizeManifest(j);
       res.push(m);
     } catch (e) {
       console.warn("Failed to parse manifest", s);

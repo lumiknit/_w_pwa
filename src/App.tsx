@@ -26,6 +26,8 @@ const App: Component = () => {
   const [copyToClipboard, setCopyToClipboard] = createSignal(false);
   const [importURL, setImportURL] = createSignal("");
 
+  const [fixDisplayAndColor, setFixDisplayAndColor] = createSignal(false);
+
   const getIconSizeN = () => {
     const s = manifest().icons[0]?.sizes.split("x")[0];
     return isNaN(parseInt(s)) ? "" : parseInt(s);
@@ -84,9 +86,18 @@ const App: Component = () => {
   };
 
   const useMan = (i: number) => {
+    const old = manifest();
     const name = mans()[i].name;
-    setManifest(mans()[i]);
-    updateSelfManifest(mans()[i]);
+    const newM = mans()[i];
+
+    if (fixDisplayAndColor()) {
+      newM.display = old.display;
+      newM.background_color = old.background_color;
+      newM.theme_color = old.theme_color;
+    }
+
+    setManifest(newM);
+    updateSelfManifest(newM);
     toast.success("Using " + name);
 
     if (copyToClipboard()) {
@@ -109,7 +120,7 @@ const App: Component = () => {
     await toast.promise(task, {
       loading: `Loading from ${url}`,
       success: "Loaded",
-      error: e => `Failed to load: ${e}`,
+      error: (e) => `Failed to load: ${e}`,
     });
   };
 
@@ -119,10 +130,8 @@ const App: Component = () => {
   });
 
   createEffect(() => {
-    const m = { ...manifest() };
     // Replace start_url to original one
-    m.start_url = "https://" + trimLink(m.start_url);
-    const c = overrideCode.replace("$json", JSON.stringify(m));
+    const c = overrideCode.replace("$json", JSON.stringify(manifest()));
     setCode(c);
   });
 
@@ -161,7 +170,7 @@ const App: Component = () => {
             Copy code
           </button>
 
-          <a href={"https://" + trimLink(manifest().start_url)} target="_blank">
+          <a href={manifest().start_url} target="_blank">
             Open
           </a>
         </div>
@@ -207,44 +216,52 @@ const App: Component = () => {
             onChange={(e) =>
               setManifest((s) => ({
                 ...s,
-                start_url: untrimLink(e.target.value),
+                start_url: e.target.value,
               }))
             }
           />
         </label>
 
-        <label>
-          Display / Color
-          <fieldset role="group">
-            <select
-              onChange={(e) =>
-                setManifest((s) => ({
-                  ...s,
-                  display: e.target.value,
-                }))
-              }
-            >
-              <For each={displays}>
-                {(d) => (
-                  <option selected={d === manifest().display} value={d}>
-                    {d}
-                  </option>
-                )}
-              </For>
-            </select>
+        <div>
+          Display / Color &nbsp;
+          <label class="inline-block">
             <input
-              type="color"
-              value={manifest().background_color}
-              onChange={(e) =>
-                setManifest((s) => ({
-                  ...s,
-                  background_color: e.target.value,
-                  theme_color: e.target.value,
-                }))
-              }
+              type="checkbox"
+              checked={fixDisplayAndColor()}
+              onChange={(e) => setFixDisplayAndColor(e.currentTarget.checked)}
             />
-          </fieldset>
-        </label>
+            Fix
+          </label>
+        </div>
+        <fieldset role="group">
+          <select
+            onChange={(e) =>
+              setManifest((s) => ({
+                ...s,
+                display: e.target.value,
+              }))
+            }
+          >
+            <For each={displays}>
+              {(d) => (
+                <option selected={d === manifest().display} value={d}>
+                  {d}
+                </option>
+              )}
+            </For>
+          </select>
+          <input
+            type="color"
+            value={manifest().background_color}
+            onChange={(e) =>
+              setManifest((s) => ({
+                ...s,
+                background_color: e.target.value,
+                theme_color: e.target.value,
+              }))
+            }
+          />
+        </fieldset>
 
         <label>
           Icon Src
@@ -354,7 +371,7 @@ const App: Component = () => {
           {(m, i) => (
             <fieldset role="group">
               <button class="outline break-all" onClick={() => useMan(i())}>
-                <b>{m.name}</b> <br /> {trimLink(m.start_url)}
+                <b>{m.name}</b> <br /> {m.start_url.replace(/https?:\/\//, "")}
               </button>
               <button class="flex-0 px-1" onClick={() => handleDel(i())}>
                 <TbTrash />

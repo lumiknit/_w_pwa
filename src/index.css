@@ -29,3 +29,7 @@ pre {
   padding-left: 1rem !important;
   padding-right: 1rem !important;
 }
+
+.inline-block {
+  display: inline-block !important;
+}
