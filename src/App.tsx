@@ -68,6 +68,9 @@ const App: Component = () => {
   };
 
   const handleClearSaved = () => {
+    if (!confirm("Clear all saved links?")) {
+      return;
+    }
     setMans(() => []);
     saveManifests(mans());
     toast.success("Cleared");
@@ -98,13 +101,16 @@ const App: Component = () => {
       toast.error("No URL found");
       return;
     }
-    try {
+    const task = (async () => {
       const text = await fetchTextFromURL(url);
       setExp(text);
-      toast.success("Loaded from URL");
-    } catch (e) {
-      toast.error("" + e);
-    }
+    })();
+
+    await toast.promise(task, {
+      loading: `Loading from ${url}`,
+      success: "Loaded",
+      error: e => `Failed to load: ${e}`,
+    });
   };
 
   onMount(() => {
@@ -351,8 +357,7 @@ const App: Component = () => {
                 <b>{m.name}</b> <br /> {trimLink(m.start_url)}
               </button>
               <button class="flex-0 px-1" onClick={() => handleDel(i())}>
-                {" "}
-                <TbTrash />{" "}
+                <TbTrash />
               </button>
             </fieldset>
           )}
