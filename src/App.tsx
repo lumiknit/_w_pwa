@@ -14,6 +14,9 @@ import {
 } from "./lib";
 import toast, { Toaster } from "solid-toast";
 import { overrideCode } from "./code";
+import { fetchTextFromURL, loadImportURL, saveImportURL } from "./import-url";
+
+import { TbTrash } from "solid-icons/tb";
 
 const App: Component = () => {
   const [exp, setExp] = createSignal("");
@@ -21,6 +24,7 @@ const App: Component = () => {
   const [mans, setMans] = createSignal<Manifest[]>([]);
   const [code, setCode] = createSignal("alert('42')");
   const [copyToClipboard, setCopyToClipboard] = createSignal(false);
+  const [importURL, setImportURL] = createSignal("");
 
   const getIconSizeN = () => {
     const s = manifest().icons[0]?.sizes.split("x")[0];
@@ -46,10 +50,17 @@ const App: Component = () => {
     saveManifests(mans());
     toast.success("Imported " + e.length);
   };
-  const handleExport = () => {
-    setExp(mansToStr(mans()));
-    toast.success("Exported");
+
+  const handleExportAll = () => {
+    const str = mansToStr(mans());
+    setExp(str);
+
+    // Copy to clipboard
+    copyText(str);
+
+    toast.success("Exported! See textarea and clipboard");
   };
+
   const handleSave = () => {
     setMans((s) => [manifest(), ...s]);
     saveManifests(mans());
@@ -75,22 +86,43 @@ const App: Component = () => {
     updateSelfManifest(mans()[i]);
     toast.success("Using " + name);
 
-    if(copyToClipboard()) {
-      copyText('javascript:' + code());
+    if (copyToClipboard()) {
+      copyText("javascript:" + code());
       window.open(untrimLink(mans()[i].start_url));
+    }
+  };
+
+  const handleImportFromURL = async () => {
+    const url = importURL();
+    if (!url) {
+      toast.error("No URL found");
+      return;
+    }
+    try {
+      const text = await fetchTextFromURL(url);
+      setExp(text);
+      toast.success("Loaded from URL");
+    } catch (e) {
+      toast.error("" + e);
     }
   };
 
   onMount(() => {
     setMans(loadManifests());
+    setImportURL(loadImportURL());
   });
 
   createEffect(() => {
-    const m = { ...manifest()};
+    const m = { ...manifest() };
     // Replace start_url to original one
-    m.start_url = 'https://' + trimLink(m.start_url);
+    m.start_url = "https://" + trimLink(m.start_url);
     const c = overrideCode.replace("$json", JSON.stringify(m));
     setCode(c);
+  });
+
+  createEffect(() => {
+    console.log("saveImportURL", importURL());
+    saveImportURL(importURL());
   });
 
   return (
@@ -115,20 +147,12 @@ const App: Component = () => {
         <div>
           <button
             onClick={() => {
-              copyText(code());
+              console.log("javascript:" + code());
+              copyText("javascript:" + code());
               toast.success("Copied!");
             }}
           >
-            Copy Code
-          </button>
-          <button
-            onClick={() => {
-              console.log('javascript:' + code());
-              copyText('javascript:' + code());
-              toast.success("Copied!");
-            }}
-          >
-            Copy w/ `javascript:`
+            Copy code
           </button>
 
           <a href={"https://" + trimLink(manifest().start_url)} target="_blank">
@@ -184,38 +208,36 @@ const App: Component = () => {
         </label>
 
         <label>
-          Display
-          <select
-            onChange={(e) =>
-              setManifest((s) => ({
-                ...s,
-                display: e.target.value,
-              }))
-            }
-          >
-            <For each={displays}>
-              {(d) => (
-                <option selected={d === manifest().display} value={d}>
-                  {d}
-                </option>
-              )}
-            </For>
-          </select>
-        </label>
-
-        <label>
-          Color
-          <input
-            type="color"
-            value={manifest().background_color}
-            onChange={(e) =>
-              setManifest((s) => ({
-                ...s,
-                background_color: e.target.value,
-                theme_color: e.target.value,
-              }))
-            }
-          />
+          Display / Color
+          <fieldset role="group">
+            <select
+              onChange={(e) =>
+                setManifest((s) => ({
+                  ...s,
+                  display: e.target.value,
+                }))
+              }
+            >
+              <For each={displays}>
+                {(d) => (
+                  <option selected={d === manifest().display} value={d}>
+                    {d}
+                  </option>
+                )}
+              </For>
+            </select>
+            <input
+              type="color"
+              value={manifest().background_color}
+              onChange={(e) =>
+                setManifest((s) => ({
+                  ...s,
+                  background_color: e.target.value,
+                  theme_color: e.target.value,
+                }))
+              }
+            />
+          </fieldset>
         </label>
 
         <label>
@@ -233,44 +255,43 @@ const App: Component = () => {
         </label>
 
         <label>
-          Icon Size (w/h, single int)
-          <input
-            type="number"
-            value={getIconSizeN()}
-            onChange={(e) =>
-              setManifest((s) => ({
-                ...s,
-                icons: [
-                  {
-                    ...s.icons[0],
-                    sizes: isNaN(parseInt(e.target.value))
-                      ? "any"
-                      : `${e.target.value}x${e.target.value}`,
-                  },
-                ],
-              }))
-            }
-          />
-        </label>
-
-        <label>
-          Icon Type
-          <select
-            onChange={(e) =>
-              setManifest((s) => ({
-                ...s,
-                icons: [{ ...s.icons[0], type: e.target.value }],
-              }))
-            }
-          >
-            <For each={iconMimes}>
-              {(m) => (
-                <option selected={m === manifest().icons[0].type} value={m}>
-                  {m}
-                </option>
-              )}
-            </For>
-          </select>
+          Icon Size (width & height) / Type
+          <fieldset role="group">
+            <input
+              type="number"
+              placeholder="any"
+              value={getIconSizeN()}
+              onChange={(e) =>
+                setManifest((s) => ({
+                  ...s,
+                  icons: [
+                    {
+                      ...s.icons[0],
+                      sizes: isNaN(parseInt(e.target.value))
+                        ? "any"
+                        : `${e.target.value}x${e.target.value}`,
+                    },
+                  ],
+                }))
+              }
+            />
+            <select
+              onChange={(e) =>
+                setManifest((s) => ({
+                  ...s,
+                  icons: [{ ...s.icons[0], type: e.target.value }],
+                }))
+              }
+            >
+              <For each={iconMimes}>
+                {(m) => (
+                  <option selected={m === manifest().icons[0].type} value={m}>
+                    {m}
+                  </option>
+                )}
+              </For>
+            </select>
+          </fieldset>
         </label>
 
         <hr />
@@ -282,8 +303,31 @@ const App: Component = () => {
           <textarea value={exp()} onChange={(e) => setExp(e.target.value)} />
         </label>
 
-        <button onClick={handleImport}> Import </button>
-        <button onClick={handleExport}> Export All </button>
+        <fieldset role="group">
+          <button class="outline secondary" disabled>
+            URL
+          </button>
+          <input
+            type="url"
+            aria-label="url"
+            value={importURL()}
+            onChange={(e) => setImportURL(e.currentTarget.value)}
+          />
+          <button
+            onClick={() => {
+              handleImportFromURL();
+            }}
+          >
+            Load
+          </button>
+        </fieldset>
+
+        <div role="group">
+          <button onClick={handleImport}> Import </button>
+          <button class="contrast" onClick={handleExportAll}>
+            Export All
+          </button>
+        </div>
 
         <hr />
 
@@ -292,17 +336,24 @@ const App: Component = () => {
           Clear all saved
         </button>
         <label>
-          <input type="checkbox" checked={copyToClipboard()} onChange={e => setCopyToClipboard(e.currentTarget.checked)} />
+          <input
+            type="checkbox"
+            checked={copyToClipboard()}
+            onChange={(e) => setCopyToClipboard(e.currentTarget.checked)}
+          />
           Copy and Open when Load
         </label>
 
         <For each={mans()}>
           {(m, i) => (
             <fieldset role="group">
-              <button class="outline" onClick={() => useMan(i())}>
-                {m.name} / {trimLink(m.start_url)}
+              <button class="outline break-all" onClick={() => useMan(i())}>
+                <b>{m.name}</b> <br /> {trimLink(m.start_url)}
               </button>
-              <button onClick={() => handleDel(i())}> Del </button>
+              <button class="flex-0 px-1" onClick={() => handleDel(i())}>
+                {" "}
+                <TbTrash />{" "}
+              </button>
             </fieldset>
           )}
         </For>

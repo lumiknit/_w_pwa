@@ -1,3 +1,9 @@
+:root {
+  --pico-spacing: 0.5rem !important;
+  --pico-form-element-spacing-vertical: 0.33rem !important;
+  --pico-form-element-spacing-horizontal: 0.66rem !important;
+}
+
 textarea {
   min-height: 250px;
 }
@@ -5,4 +11,21 @@ textarea {
 pre {
   white-space: pre-wrap;
   word-wrap: break-all;
+  max-height: 10svh;
+  overflow: auto;
+  padding: 0.5rem;
+  font-size: 0.75em !important;
+}
+
+.break-all {
+  word-break: break-all !important;
+}
+
+.flex-0 {
+  flex: 0 0 auto !important;
+}
+
+.px-1 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }

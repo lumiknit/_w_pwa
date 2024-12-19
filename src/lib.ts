@@ -1,12 +1,10 @@
 import toast from "solid-toast";
 
 export const displays = ["standalone", "browser", "minimal-ui", "fullscreen"];
-export const iconMimes = [
-  "image/png",
-  "image/jpeg",
-  "image/svg+xml",
-  "image/x-icon",
-];
+
+export const iconMimes = ["image/png", "image/jpeg"];
+
+export const iconPurposes = ["any", "monochrome", "maskable", "maskable any"];
 
 export type Icon = {
   src: string;
