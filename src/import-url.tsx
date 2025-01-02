@@ -12,7 +12,9 @@ export const loadImportURL = (): string => {
 
 /** Fetch text from the url */
 export const fetchTextFromURL = async (url: string): Promise<string> => {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    cache: "no-cache",
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.statusText}`);
   }

@@ -12,6 +12,11 @@ export type Icon = {
   type: string;
 };
 
+export type Shortcut = {
+  name: string;
+  url: string;
+};
+
 export type Manifest = {
   name: string;
   short_name: string;
@@ -20,6 +25,7 @@ export type Manifest = {
   background_color: string;
   theme_color: string;
   icons: Icon[];
+  shortcuts: Shortcut[];
 };
 
 export const defaultIcon = (): Icon => ({
@@ -36,6 +42,7 @@ export const defaultManifest = (): Manifest => ({
   background_color: "#000000",
   theme_color: "#000000",
   icons: [defaultIcon()],
+  shortcuts: [],
 });
 
 export const sanitizeManifest = (m: Object) => {
@@ -120,6 +127,32 @@ export const strToMans = (str: string) => {
   return res;
 };
 
+/** Add some more fields for chrome */
+export const makeChromeManifest = (manifest: Manifest) => {
+  try {
+    const startURL = manifest.start_url;
+    // Remove all paths
+    const url = new URL(startURL);
+    url.pathname = "/";
+    url.search = "";
+    url.hash = "";
+    const newStartURL = url.toString();
+
+    const m = {
+      ...manifest,
+      scope: newStartURL,
+      shortcuts: manifest.shortcuts.map((s) => ({
+        ...s,
+        url: new URL(s.url, newStartURL).toString(),
+      })),
+    };
+    return m;
+  } catch (e) {
+    console.error("Failed to make chrome manifest", e);
+    return manifest;
+  }
+};
+
 export const saveManifests = (manifests: Manifest[]) => {
   localStorage.setItem("manifests", mansToStr(manifests));
 };
@@ -135,3 +168,15 @@ export const loadManifests = (): Manifest[] => {
     .filter((v) => v)
     .map((m) => JSON.parse(m));
 };
+
+export const getImageSizeAndMime = (url: string) => new Promise<[number, number, string]>((resolve, reject) => {
+  const img = new Image();
+  console.log("Start");
+  img.onload = () => {
+    resolve([img.width, img.height, "image/png"]);
+  };
+  img.onerror = (e) => {
+    reject(e);
+  };
+  img.src = url;
+});
