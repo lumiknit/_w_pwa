@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For, onMount } from "solid-js";
+import { Component, createEffect, createSignal, onMount } from "solid-js";
 import {
   defaultManifest,
   loadManifests,
