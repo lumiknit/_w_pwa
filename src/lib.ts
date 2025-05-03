@@ -10,6 +10,7 @@ export type Icon = {
   src: string;
   sizes: string;
   type: string;
+  purpose?: string;
 };
 
 export type Shortcut = {
@@ -32,6 +33,7 @@ export const defaultIcon = (): Icon => ({
   src: "",
   sizes: "128x128",
   type: iconMimes[0],
+  purpose: "maskable",
 });
 
 export const defaultManifest = (): Manifest => ({
@@ -169,14 +171,15 @@ export const loadManifests = (): Manifest[] => {
     .map((m) => JSON.parse(m));
 };
 
-export const getImageSizeAndMime = (url: string) => new Promise<[number, number, string]>((resolve, reject) => {
-  const img = new Image();
-  console.log("Start");
-  img.onload = () => {
-    resolve([img.width, img.height, "image/png"]);
-  };
-  img.onerror = (e) => {
-    reject(e);
-  };
-  img.src = url;
-});
+export const getImageSizeAndMime = (url: string) =>
+  new Promise<[number, number, string]>((resolve, reject) => {
+    const img = new Image();
+    console.log("Start");
+    img.onload = () => {
+      resolve([img.width, img.height, "image/png"]);
+    };
+    img.onerror = (e) => {
+      reject(e);
+    };
+    img.src = url;
+  });

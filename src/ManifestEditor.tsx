@@ -27,13 +27,13 @@ const ManifestEditor: Component<Props> = (props) => {
       ...m,
       shortcuts: [...m.shortcuts, { name: "", url: "" }],
     }));
-  }
+  };
 
   const deleteShortcut = (i: number) => {
     props.setManifest((m) => ({
-        ...m,
-        shortcuts: m.shortcuts.filter((_, j) => j !== i),
-      }));
+      ...m,
+      shortcuts: m.shortcuts.filter((_, j) => j !== i),
+    }));
   };
 
   const updateShortcutsName = (i: number, name: string) => {
@@ -41,14 +41,14 @@ const ManifestEditor: Component<Props> = (props) => {
       ...m,
       shortcuts: m.shortcuts.map((s, j) => (j === i ? { ...s, name } : s)),
     }));
-  }
+  };
 
   const updateShortcutsURL = (i: number, url: string) => {
     props.setManifest((m) => ({
       ...m,
       shortcuts: m.shortcuts.map((s, j) => (j === i ? { ...s, url } : s)),
     }));
-  }
+  };
 
   return (
     <>
@@ -199,19 +199,25 @@ const ManifestEditor: Component<Props> = (props) => {
 
       <label>Shortcuts</label>
       <For each={props.manifest.shortcuts}>
-        {
-          (s, i) => <fieldset  role="group">
-            <input type="text" placeholder="Name"
+        {(s, i) => (
+          <fieldset role="group">
+            <input
+              type="text"
+              placeholder="Name"
               value={s.name}
-              onChange={e => updateShortcutsName(i(), e.currentTarget.value)}
+              onChange={(e) => updateShortcutsName(i(), e.currentTarget.value)}
             />
-            <input type="text" placeholder="URL (e.g. /abc)"
+            <input
+              type="text"
+              placeholder="URL (e.g. /abc)"
               value={s.url}
-              onChange={e => updateShortcutsURL(i(), e.currentTarget.value)}
+              onChange={(e) => updateShortcutsURL(i(), e.currentTarget.value)}
             />
-            <button onClick={() => deleteShortcut(i())} class="flex-0 px-1"><TbTrash /></button>
+            <button onClick={() => deleteShortcut(i())} class="flex-0 px-1">
+              <TbTrash />
+            </button>
           </fieldset>
-        }
+        )}
       </For>
       <button onClick={addShortcut}>Add Shortcut</button>
     </>

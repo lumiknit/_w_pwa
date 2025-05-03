@@ -100,6 +100,7 @@ const App: Component = () => {
           Apply script (copy and paste in console!)
           <pre>{code()}</pre>
         </label>
+
         <div>
           <button
             onClick={() => {
