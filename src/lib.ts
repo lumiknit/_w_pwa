@@ -6,6 +6,14 @@ export const iconMimes = ["image/png", "image/jpeg"];
 
 export const iconPurposes = ["any", "monochrome", "maskable", "maskable any"];
 
+export const iconPurposeOptions: {
+  label: string;
+  value: string | undefined;
+}[] = [
+  { label: "None", value: undefined },
+  { label: "Maskable", value: "maskable" },
+];
+
 export type Icon = {
   src: string;
   sizes: string;

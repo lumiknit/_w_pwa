@@ -9,6 +9,8 @@ type Props = {
   onSelect: (i: number) => void;
   onDelete: (i: number) => void;
 
+  onCopyForMonkey: () => void;
+
   onCopyToClipboardChange: (value: boolean) => void;
 };
 
@@ -19,6 +21,11 @@ const SavedList: Component<Props> = (props) => {
       <button type="reset" onClick={props.onClear}>
         Clear all saved
       </button>
+
+      <button type="button" onClick={props.onCopyForMonkey}>
+        Copy for xxxMonkey
+      </button>
+
       <label>
         <input
           type="checkbox"

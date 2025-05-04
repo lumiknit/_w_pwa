@@ -11,8 +11,6 @@ textarea {
 pre {
   white-space: pre-wrap;
   word-wrap: break-all;
-  max-height: 10svh;
-  overflow: auto;
   padding: 0.5rem;
   font-size: 0.75em !important;
 }

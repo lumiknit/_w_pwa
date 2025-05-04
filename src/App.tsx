@@ -10,12 +10,15 @@ import {
   updateSelfManifest,
 } from "./lib";
 import toast, { Toaster } from "solid-toast";
-import { overrideCode } from "./code";
+
+import { default as overrideCode } from "./override-manifest.js?raw";
+import { default as monkeyCode } from "./monkey.js?raw";
 
 import { copyText } from "./clipboard";
 import Importer from "./Importer";
 import SavedList from "./SavedList";
 import ManifestEditor from "./ManifestEditor";
+import CodeAccordion from "./CodeAccordion";
 
 const App: Component = () => {
   const [manifest, setManifest] = createSignal(defaultManifest());
@@ -45,6 +48,13 @@ const App: Component = () => {
     setMans((s) => s.filter((_, j) => i !== j));
     saveManifests(mans());
     toast.success("Deleted " + name);
+  };
+
+  const handleCopyForMonkey = () => {
+    let code = monkeyCode;
+    code = code.replace("$manifests", JSON.stringify(mans()));
+    copyText(code);
+    toast.success("Using Monkey");
   };
 
   const useMan = (i: number) => {
@@ -77,7 +87,9 @@ const App: Component = () => {
   createEffect(() => {
     // Replace start_url to original one
     const m = makeChromeManifest(manifest());
-    const c = overrideCode.replace("$json", JSON.stringify(m));
+    const c = overrideCode
+      .replace("$json", JSON.stringify(m))
+      .replace(/\s+/g, "");
     setCode(c);
   });
 
@@ -87,19 +99,15 @@ const App: Component = () => {
       <div class="container">
         <h1>Self manifest</h1>
 
-        <hr />
-
-        <h2> Raw Manifest</h2>
-
-        <label>
-          Raw JSON
-          <pre>{JSON.stringify(manifest(), null, 2)}</pre>
-        </label>
-
-        <label>
-          Apply script (copy and paste in console!)
-          <pre>{code()}</pre>
-        </label>
+        <CodeAccordion
+          items={[
+            {
+              title: "manifest.json",
+              content: JSON.stringify(manifest(), null, 2),
+            },
+            { title: "override.js", content: code() },
+          ]}
+        />
 
         <div>
           <button
@@ -157,6 +165,7 @@ const App: Component = () => {
           onSelect={useMan}
           onDelete={handleDel}
           onCopyToClipboardChange={setCopyToClipboard}
+          onCopyForMonkey={handleCopyForMonkey}
         />
       </div>
     </>

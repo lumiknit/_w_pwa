@@ -3,6 +3,8 @@ import {
   displays,
   getImageSizeAndMime,
   iconMimes,
+  iconPurposeOptions,
+  iconPurposes,
   Manifest,
   trimLink,
 } from "./lib";
@@ -195,6 +197,40 @@ const ManifestEditor: Component<Props> = (props) => {
             </For>
           </select>
         </fieldset>
+      </label>
+
+      <label>
+        Icon Purpose
+        <select
+          onChange={(e) =>
+            props.setManifest((m) => ({
+              ...m,
+              icons: [
+                {
+                  ...m.icons[0],
+                  purpose: iconPurposeOptions.find(
+                    (v) => v.label === e.target.value,
+                  )?.value,
+                },
+              ],
+            }))
+          }
+        >
+          <For each={iconPurposeOptions}>
+            {(option) => (
+              <option
+                selected={
+                  iconPurposeOptions.find(
+                    (v) => v.value === props.manifest.icons[0].purpose,
+                  )?.label === option.label
+                }
+                value={option.label}
+              >
+                {option.label}
+              </option>
+            )}
+          </For>
+        </select>
       </label>
 
       <label>Shortcuts</label>
