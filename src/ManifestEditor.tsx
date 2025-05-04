@@ -4,7 +4,6 @@ import {
   getImageSizeAndMime,
   iconMimes,
   iconPurposeOptions,
-  iconPurposes,
   Manifest,
   trimLink,
 } from "./lib";
