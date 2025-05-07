@@ -89,7 +89,7 @@ const App: Component = () => {
     const m = makeChromeManifest(manifest());
     const c = overrideCode
       .replace("$json", JSON.stringify(m))
-      .replace(/\s+/g, "");
+      .replace(/\n\s*/g, " ");
     setCode(c);
   });
 

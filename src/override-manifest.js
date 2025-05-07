@@ -8,4 +8,5 @@
     new Blob(["$json"], { type: "application/json" }),
   );
   document.head.appendChild(manifest);
+  alert("Applied");
 })();
