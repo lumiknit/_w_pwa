@@ -88,7 +88,7 @@ const App: Component = () => {
     // Replace start_url to original one
     const m = makeChromeManifest(manifest());
     const c = overrideCode
-      .replace("$json", JSON.stringify(m))
+      .replace("\"$json\"", "`" + JSON.stringify(m) + "`")
       .replace(/\n\s*/g, " ");
     setCode(c);
   });
