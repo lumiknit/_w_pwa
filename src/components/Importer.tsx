@@ -1,16 +1,15 @@
 import { Component, onMount } from "solid-js";
-import { Manifest, mansToStr, strToMans } from "./lib";
-import { fetchTextFromURL, loadImportURL, saveImportURL } from "./import-url";
+import { Manifest, mansToStr, strToMans } from "../core";
+import {
+  fetchTextFromURL,
+  loadImportURL,
+  saveImportURL,
+} from "../core/import-url";
 import toast from "solid-toast";
-import { copyText } from "./clipboard";
+import { copyText } from "../core/clipboard";
+import { manifestList, setManifestList } from "../store";
 
-type Props = {
-  currentManifests: Manifest[];
-
-  onImportData: (data: Manifest[]) => void;
-};
-
-const Importer: Component<Props> = (props) => {
+const Importer: Component = () => {
   let contentsRef: HTMLTextAreaElement = null!;
   let urlRef: HTMLInputElement = null!;
 
@@ -27,13 +26,12 @@ const Importer: Component<Props> = (props) => {
   const handleImportClick = () => {
     const str = contentsRef.value;
     const manifests = strToMans(str);
-    props.onImportData(manifests);
-
+    setManifestList(manifests);
     toast.success("Imported!");
   };
 
   const handleExportClick = () => {
-    const str = mansToStr(props.currentManifests);
+    const str = mansToStr(manifestList());
     contentsRef.value = str;
 
     // Copy to clipboard

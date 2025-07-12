@@ -39,3 +39,21 @@ pre {
   text-align: left;
   gap: var(--pico-spacing);
 }
+
+.top-fixed {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background-color: var(--pico-background-color);
+}
+
+.nav-active {
+  font-weight: bold !important;
+  text-decoration: underline !important;
+}
+
+.ml-1 {
+  margin-left: 0.125rem !important;
+}

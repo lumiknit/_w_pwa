@@ -1,67 +1,87 @@
-import { Component, For, Setter } from "solid-js";
+import { Component, For } from "solid-js";
 import {
   displays,
   getImageSizeAndMime,
   iconMimes,
   iconPurposeOptions,
-  Manifest,
   trimLink,
-} from "./lib";
+} from "../core";
 import toast from "solid-toast";
-import { TbTrash } from "solid-icons/tb";
+import { TbPencilPlus, TbPlus, TbTrash } from "solid-icons/tb";
+import {
+  addCurrentManifestToList,
+  fixDisplayAndColor,
+  manifest,
+  setFixDisplayAndColor,
+  setManifest,
+  updateCurrentManifestToList,
+} from "../store";
 
-type Props = {
-  manifest: Manifest;
-  setManifest: Setter<Manifest>;
-
-  setFixDisplayAndColor: (b: boolean) => void;
-};
-
-const ManifestEditor: Component<Props> = (props) => {
+const ManifestEditor: Component = () => {
   const getIconSizeN = () => {
-    const s = props.manifest.icons[0]?.sizes.split("x")[0];
+    const s = manifest().icons[0]?.sizes.split("x")[0];
     return isNaN(parseInt(s)) ? "" : parseInt(s);
   };
 
   const addShortcut = () => {
-    props.setManifest((m) => ({
+    setManifest((m) => ({
       ...m,
       shortcuts: [...m.shortcuts, { name: "", url: "" }],
     }));
   };
 
   const deleteShortcut = (i: number) => {
-    props.setManifest((m) => ({
+    setManifest((m) => ({
       ...m,
       shortcuts: m.shortcuts.filter((_, j) => j !== i),
     }));
   };
 
   const updateShortcutsName = (i: number, name: string) => {
-    props.setManifest((m) => ({
+    setManifest((m) => ({
       ...m,
       shortcuts: m.shortcuts.map((s, j) => (j === i ? { ...s, name } : s)),
     }));
   };
 
   const updateShortcutsURL = (i: number, url: string) => {
-    props.setManifest((m) => ({
+    setManifest((m) => ({
       ...m,
       shortcuts: m.shortcuts.map((s, j) => (j === i ? { ...s, url } : s)),
     }));
+  };
+
+  const handleAdd = () => {
+    addCurrentManifestToList();
+    toast.success("Manifest added to the list.");
+  };
+
+  const handleUpdate = () => {
+    updateCurrentManifestToList();
+    toast.success("Manifest updated in the list.");
   };
 
   return (
     <>
       <h2> Fields </h2>
 
+      <button onClick={handleAdd}>
+        <TbPlus />
+        Add
+      </button>
+
+      <button onClick={handleUpdate} class="ml-1">
+        <TbPencilPlus />
+        Update
+      </button>
+
       <label>
         App Name
         <input
           type="text"
-          value={props.manifest.name}
+          value={manifest().name}
           onChange={(e) =>
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
               name: e.target.value,
               short_name: e.target.value,
@@ -74,9 +94,9 @@ const ManifestEditor: Component<Props> = (props) => {
         Link
         <input
           type="text"
-          value={trimLink(props.manifest.start_url)}
+          value={trimLink(manifest().start_url)}
           onChange={(e) =>
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
               start_url: e.target.value,
             }))
@@ -89,9 +109,8 @@ const ManifestEditor: Component<Props> = (props) => {
         <label class="inline-block">
           <input
             type="checkbox"
-            onChange={(e) =>
-              props.setFixDisplayAndColor(e.currentTarget.checked)
-            }
+            checked={fixDisplayAndColor()}
+            onChange={(e) => setFixDisplayAndColor(e.currentTarget.checked)}
           />
           Fix
         </label>
@@ -99,7 +118,7 @@ const ManifestEditor: Component<Props> = (props) => {
       <fieldset role="group">
         <select
           onChange={(e) =>
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
               display: e.target.value,
             }))
@@ -107,7 +126,7 @@ const ManifestEditor: Component<Props> = (props) => {
         >
           <For each={displays}>
             {(d) => (
-              <option selected={d === props.manifest.display} value={d}>
+              <option selected={d === manifest().display} value={d}>
                 {d}
               </option>
             )}
@@ -115,9 +134,9 @@ const ManifestEditor: Component<Props> = (props) => {
         </select>
         <input
           type="color"
-          value={props.manifest.background_color}
+          value={manifest().background_color}
           onChange={(e) =>
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
               background_color: e.target.value,
               theme_color: e.target.value,
@@ -130,16 +149,16 @@ const ManifestEditor: Component<Props> = (props) => {
         Icon Src
         <input
           type="text"
-          value={props.manifest.icons[0]?.src}
+          value={manifest().icons[0]?.src}
           onChange={(e) => {
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
-              icons: [{ ...props.manifest.icons[0], src: e.target.value }],
+              icons: [{ ...manifest().icons[0], src: e.target.value }],
             }));
             getImageSizeAndMime(e.target.value)
               .then((res) => {
                 toast.success(`Image Info: ${res[0]}x${res[1]} ${res[2]}`);
-                props.setManifest((m) => ({
+                setManifest((m) => ({
                   ...m,
                   icons: [
                     {
@@ -155,7 +174,7 @@ const ManifestEditor: Component<Props> = (props) => {
               });
           }}
         />
-        <img src={props.manifest.icons[0]?.src} alt="icon" width="36" />
+        <img src={manifest().icons[0]?.src} alt="icon" width="36" />
       </label>
 
       <label>
@@ -166,11 +185,11 @@ const ManifestEditor: Component<Props> = (props) => {
             placeholder="any"
             value={getIconSizeN()}
             onChange={(e) =>
-              props.setManifest({
-                ...props.manifest,
+              setManifest({
+                ...manifest(),
                 icons: [
                   {
-                    ...props.manifest.icons[0],
+                    ...manifest().icons[0],
                     sizes: isNaN(parseInt(e.target.value))
                       ? "any"
                       : `${e.target.value}x${e.target.value}`,
@@ -181,7 +200,7 @@ const ManifestEditor: Component<Props> = (props) => {
           />
           <select
             onChange={(e) =>
-              props.setManifest((m) => ({
+              setManifest((m) => ({
                 ...m,
                 icons: [{ ...m.icons[0], type: e.target.value }],
               }))
@@ -189,7 +208,7 @@ const ManifestEditor: Component<Props> = (props) => {
           >
             <For each={iconMimes}>
               {(m) => (
-                <option selected={m === props.manifest.icons[0].type} value={m}>
+                <option selected={m === manifest().icons[0].type} value={m}>
                   {m}
                 </option>
               )}
@@ -202,7 +221,7 @@ const ManifestEditor: Component<Props> = (props) => {
         Icon Purpose
         <select
           onChange={(e) =>
-            props.setManifest((m) => ({
+            setManifest((m) => ({
               ...m,
               icons: [
                 {
@@ -220,7 +239,7 @@ const ManifestEditor: Component<Props> = (props) => {
               <option
                 selected={
                   iconPurposeOptions.find(
-                    (v) => v.value === props.manifest.icons[0].purpose,
+                    (v) => v.value === manifest().icons[0].purpose,
                   )?.label === option.label
                 }
                 value={option.label}
@@ -233,7 +252,7 @@ const ManifestEditor: Component<Props> = (props) => {
       </label>
 
       <label>Shortcuts</label>
-      <For each={props.manifest.shortcuts}>
+      <For each={manifest().shortcuts}>
         {(s, i) => (
           <fieldset role="group">
             <input

@@ -12,14 +12,15 @@
   "dependencies": {
     "@picocss/pico": "^2.1.1",
     "solid-icons": "^1.1.0",
-    "solid-js": "^1.9.6",
-    "solid-toast": "^0.5.0"
+    "solid-js": "^1.9.7",
+    "solid-toast": "^0.5.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "typescript": "~5.6.3",
-    "vite": "^6.3.4",
-    "vite-plugin-singlefile": "^2.2.0",
-    "vite-plugin-solid": "^2.11.6"
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.3.0",
+    "vite-plugin-solid": "^2.11.7"
   }
 }
