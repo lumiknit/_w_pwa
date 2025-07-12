@@ -1,5 +1,5 @@
 import { TbScript, TbTrash, TbTrashFilled } from "solid-icons/tb";
-import { Component, For, Show } from "solid-js";
+import { Component, For } from "solid-js";
 import { Manifest } from "../core/index";
 import {
   clearAllManifests,
