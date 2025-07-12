@@ -1,47 +1,67 @@
 import toast from "solid-toast";
+import { z } from "zod";
 
-export const displays = ["standalone", "browser", "minimal-ui", "fullscreen"];
+export const displays = [
+  "standalone",
+  "browser",
+  "minimal-ui",
+  "fullscreen",
+] as const;
+export const displaySchema = z.enum(displays);
+export type Display = z.infer<typeof displaySchema>;
 
-export const iconMimes = ["image/png", "image/jpeg"];
+export const iconMimes = ["image/png", "image/jpeg"] as const;
+export const iconMimeSchema = z.enum(iconMimes);
+export type IconMime = z.infer<typeof iconMimeSchema>;
 
-export const iconPurposes = ["any", "monochrome", "maskable", "maskable any"];
+export const iconPurposes = [
+  "any",
+  "monochrome",
+  "maskable",
+  "maskable any",
+] as const;
+export const iconPurposeSchema = z.enum(iconPurposes);
+export type IconPurpose = z.infer<typeof iconPurposeSchema>;
 
 export const iconPurposeOptions: {
   label: string;
-  value: string | undefined;
+  value: IconPurpose | undefined;
 }[] = [
   { label: "None", value: undefined },
   { label: "Maskable", value: "maskable" },
 ];
 
-export type Icon = {
-  src: string;
-  sizes: string;
-  type: string;
-  purpose?: string;
-};
+export const iconSchema = z.object({
+  src: z.string(),
+  sizes: z.string(),
+  type: iconMimeSchema,
+  purpose: iconPurposeSchema.optional(),
+});
+export type Icon = z.infer<typeof iconSchema>;
 
-export type Shortcut = {
-  name: string;
-  url: string;
-};
+export const shortcutSchema = z.object({
+  name: z.string(),
+  url: z.string(),
+});
+export type Shortcut = z.infer<typeof shortcutSchema>;
 
-export type Manifest = {
-  name: string;
-  short_name: string;
-  start_url: string;
-  display: string;
-  background_color: string;
-  theme_color: string;
-  icons: Icon[];
-  shortcuts: Shortcut[];
-};
+export const manifestSchema = z.object({
+  name: z.string(),
+  short_name: z.string(),
+  start_url: z.string(),
+  display: displaySchema,
+  background_color: z.string(),
+  theme_color: z.string(),
+  icons: z.array(iconSchema),
+  shortcuts: z.array(shortcutSchema),
+});
+export type Manifest = z.infer<typeof manifestSchema>;
 
 export const defaultIcon = (): Icon => ({
   src: "",
   sizes: "128x128",
   type: iconMimes[0],
-  purpose: "maskable",
+  purpose: undefined,
 });
 
 export const defaultManifest = (): Manifest => ({
@@ -55,23 +75,39 @@ export const defaultManifest = (): Manifest => ({
   shortcuts: [],
 });
 
-export const sanitizeManifest = (m: Object) => {
-  const d = defaultManifest();
-  const res: any = {
-    ...d,
-    ...m,
-  };
-  Object.entries(d).forEach(([k, v]) => {
-    if (typeof res[k] !== typeof v) {
-      res[k] = v;
+export const sanitizeManifest = (m: unknown): Manifest => {
+  try {
+    const parsed = manifestSchema.parse(m);
+    if (parsed.icons.length === 0) {
+      parsed.icons = [defaultIcon()];
     }
-  });
-  if (res.icons.length === 0) {
-    res.icons = [defaultIcon()];
+    parsed.start_url = normalizeStartURL(parsed.start_url);
+    console.log(m, parsed);
+    return parsed;
+  } catch (error) {
+    console.warn(
+      "Failed to validate manifest, using defaults with merged data:",
+      error,
+    );
+    const d = defaultManifest();
+    const res = {
+      ...d,
+      ...(typeof m === "object" && m !== null ? m : {}),
+    };
+
+    const safeParsed = manifestSchema.safeParse(res);
+    if (safeParsed.success) {
+      if (safeParsed.data.icons.length === 0) {
+        safeParsed.data.icons = [defaultIcon()];
+      }
+      safeParsed.data.start_url = normalizeStartURL(safeParsed.data.start_url);
+      return safeParsed.data;
+    }
+
+    const fallback = defaultManifest();
+    fallback.start_url = normalizeStartURL(fallback.start_url);
+    return fallback;
   }
-  res.start_url = normalizeStartURL(res.start_url);
-  console.log(m, res);
-  return res as Manifest;
 };
 
 export const linkPrefix = "https://lumiknit.github.io/apps/pwa/j.html?j=";
@@ -90,7 +126,10 @@ export const normalizeStartURL = (url: string) => {
 
 const el = (id: string) => document.getElementById(id) as HTMLElement;
 
-export const updateSelfManifest = async (manifest: Manifest) => {
+/**
+ * Modify current page manifest to the given manifest.
+ */
+export const setCurrentPageManifest = async (manifest: Manifest) => {
   // Convert start_url to self url
   const m = { ...manifest, start_url: untrimLink(manifest.start_url) };
 
@@ -110,11 +149,11 @@ export const updateSelfManifest = async (manifest: Manifest) => {
   toast.success("Manifest updated");
 };
 
-export const mansToStr = (manifests: Manifest[]) => {
+export const manifestListToString = (manifests: Manifest[]) => {
   return manifests.map((m) => JSON.stringify(m)).join("\n");
 };
 
-export const strToMans = (str: string) => {
+export const stringToManifestList = (str: string): Manifest[] => {
   const spl = str.split("\n");
   const res: Manifest[] = [];
   for (let s of spl) {
@@ -124,9 +163,6 @@ export const strToMans = (str: string) => {
     }
     try {
       const j = JSON.parse(s);
-      if (typeof j !== "object") {
-        throw new Error("Not an object");
-      }
       const m = sanitizeManifest(j);
       res.push(m);
     } catch (e) {
@@ -164,7 +200,7 @@ export const makeChromeManifest = (manifest: Manifest) => {
 };
 
 export const saveManifests = (manifests: Manifest[]) => {
-  localStorage.setItem("manifests", mansToStr(manifests));
+  localStorage.setItem("manifests", manifestListToString(manifests));
 };
 
 export const loadManifests = (): Manifest[] => {
@@ -176,7 +212,16 @@ export const loadManifests = (): Manifest[] => {
     .split("\n")
     .map((v) => v.trim())
     .filter((v) => v)
-    .map((m) => JSON.parse(m));
+    .map((m) => {
+      try {
+        const parsed = JSON.parse(m);
+        return sanitizeManifest(parsed);
+      } catch (e) {
+        console.warn("Failed to parse stored manifest:", m, e);
+        return null;
+      }
+    })
+    .filter((m): m is Manifest => m !== null);
 };
 
 export const getImageSizeAndMime = (url: string) =>

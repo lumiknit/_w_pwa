@@ -1,10 +1,11 @@
-import { TbTrash, TbTrashFilled } from "solid-icons/tb";
+import { TbScript, TbTrash, TbTrashFilled } from "solid-icons/tb";
 import { Component, For, Show } from "solid-js";
 import { Manifest } from "../core/index";
 import {
   clearAllManifests,
   copyOnSelect,
   delManifestFromList,
+  manifest,
   manifestList,
   monkeyCode,
   openManifestFromList,
@@ -35,12 +36,10 @@ const Item: Component<ItemProps> = (props) => {
 
   return (
     <fieldset role="group">
-      <button class="outline break-all px-1" onClick={handleSelect}>
+      <button class={"break-all px-1" + ((manifest().start_url === props.manifest.start_url) ? "" : " outline")} onClick={handleSelect}>
         <div class="hstack">
           <span>
-            <Show when={props.index > 0}>
-              <img src={props.manifest.icons[0]?.src} alt="Icon" width={36} />
-            </Show>
+              <img src={props.manifest.icons[0]?.src} alt="(icon)" width={36} />
           </span>
           <span>
             <b>{props.manifest.name}</b> <br />
@@ -48,7 +47,7 @@ const Item: Component<ItemProps> = (props) => {
           </span>
         </div>
       </button>
-      <button class="flex-0 px-1" onClick={handleDelete}>
+      <button class="flex-0 px-1 outline" onClick={handleDelete}>
         <TbTrash />
       </button>
     </fieldset>
@@ -76,6 +75,7 @@ const SavedList: Component = () => {
           Clear All
         </button>
         <button type="button" class="ml-1" onClick={handleCopyForMonkey}>
+          <TbScript />
           Copy Userscript
         </button>
       </div>

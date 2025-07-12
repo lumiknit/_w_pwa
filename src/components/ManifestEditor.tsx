@@ -1,9 +1,11 @@
 import { Component, For } from "solid-js";
 import {
+  Display,
   displays,
   getImageSizeAndMime,
   iconMimes,
   iconPurposeOptions,
+  iconSchema,
   trimLink,
 } from "../core";
 import toast from "solid-toast";
@@ -120,7 +122,7 @@ const ManifestEditor: Component = () => {
           onChange={(e) =>
             setManifest((m) => ({
               ...m,
-              display: e.target.value,
+              display: e.target.value as Display,
             }))
           }
         >
@@ -161,11 +163,11 @@ const ManifestEditor: Component = () => {
                 setManifest((m) => ({
                   ...m,
                   icons: [
-                    {
+                    iconSchema.parse({
                       ...m.icons[0],
                       sizes: `${res[0]}x${res[1]}`,
                       type: res[2],
-                    },
+                    }),
                   ],
                 }));
               })
@@ -202,7 +204,9 @@ const ManifestEditor: Component = () => {
             onChange={(e) =>
               setManifest((m) => ({
                 ...m,
-                icons: [{ ...m.icons[0], type: e.target.value }],
+                icons: [
+                  iconSchema.parse({ ...m.icons[0], type: e.target.value }),
+                ],
               }))
             }
           >

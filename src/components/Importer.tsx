@@ -1,5 +1,5 @@
-import { Component, onMount } from "solid-js";
-import { Manifest, mansToStr, strToMans } from "../core";
+import { Component, createSignal, onMount } from "solid-js";
+import { manifestListToString, stringToManifestList } from "../core";
 import {
   fetchTextFromURL,
   loadImportURL,
@@ -8,8 +8,11 @@ import {
 import toast from "solid-toast";
 import { copyText } from "../core/clipboard";
 import { manifestList, setManifestList } from "../store";
+import { TbCopy, TbFileExport, TbFileImport } from "solid-icons/tb";
 
 const Importer: Component = () => {
+  const [title, setTitle] = createSignal("Imported / Exported JSON");
+
   let contentsRef: HTMLTextAreaElement = null!;
   let urlRef: HTMLInputElement = null!;
 
@@ -25,14 +28,16 @@ const Importer: Component = () => {
 
   const handleImportClick = () => {
     const str = contentsRef.value;
-    const manifests = strToMans(str);
+    const manifests = stringToManifestList(str);
     setManifestList(manifests);
+    setTitle("Imported JSON");
     toast.success("Imported!");
   };
 
   const handleExportClick = () => {
-    const str = mansToStr(manifestList());
+    const str = manifestListToString(manifestList());
     contentsRef.value = str;
+    setTitle("Exported JSON");
 
     // Copy to clipboard
     copyText(str);
@@ -58,12 +63,20 @@ const Importer: Component = () => {
     });
   };
 
+  const handleAllSiteScript = async () => {
+    const code = (await import("../core/raw/patch-script.js?raw")).default
+    .replace(/\n\s*/g, "")
+    .replace("\"$url\"", JSON.stringify(urlRef.value));
+    copyText(code);
+    toast.success("Copied script to clipboard");
+  };
+
   return (
     <>
       <h2> Import </h2>
 
       <label>
-        Import JSON
+        {title()}
         <textarea ref={contentsRef!} />
       </label>
 
@@ -81,10 +94,21 @@ const Importer: Component = () => {
       </fieldset>
 
       <div role="group">
-        <button onClick={handleImportClick}> Import </button>
+        <button onClick={handleImportClick}> <TbFileImport /> Import </button>
         <button class="contrast" onClick={handleExportClick}>
+          <TbFileExport />
           Export All
         </button>
+      </div>
+
+      <div>
+        <button onClick={handleAllSiteScript}>
+          <TbCopy />
+          Copy All Sites Script
+        </button>
+        <p>
+          This copies a script which can be used all sites in the list of the URL.
+        </p>
       </div>
     </>
   );

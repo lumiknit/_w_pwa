@@ -20,7 +20,7 @@ const Nav: Component<Props> = (props) => {
             <li>
               <a
                 href="#"
-                class={props.active === tab ? "nav-active" : ""}
+                class={props.active === tab ? "nav-active" : "secondary"}
                 onClick={() => props.onTabChange(tab)}
               >
                 {tab}

@@ -2,7 +2,7 @@ import { Component, createEffect, createSignal } from "solid-js";
 import CodeAccordion from "./CodeAccordion";
 import { manifest } from "../store";
 import toast from "solid-toast";
-import { makeChromeManifest, updateSelfManifest } from "../core";
+import { makeChromeManifest, setCurrentPageManifest } from "../core";
 
 import { default as overrideCode } from "../core/raw/override-manifest.js?raw";
 import { copyText } from "../core/clipboard";
@@ -54,9 +54,9 @@ const SelfManifestView: Component = () => {
         </a>
 
         <button
-          class="ml-1"
+          class="ml-1 secondary"
           onClick={() => {
-            updateSelfManifest(makeChromeManifest(manifest()));
+            setCurrentPageManifest(makeChromeManifest(manifest()));
           }}
         >
           Update manifest

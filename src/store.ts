@@ -11,10 +11,11 @@ import {
 
 export const [manifest, setManifest] =
   createSignal<Manifest>(defaultManifest());
-export const [manifestList, setManifestList_] = createSignal<Manifest[]>([]);
+const [manifestList, setManifestList_] = createSignal<Manifest[]>([]);
+export { manifestList };
 
 export const setManifestList: Setter<Manifest[]> = (v) => {
-  const u = setManifestList_(v);
+  const u = setManifestList_(v as Manifest[]);
   saveManifests(u);
 };
 

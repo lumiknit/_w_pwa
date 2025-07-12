@@ -23,11 +23,13 @@ const App: Component = () => {
   const [activeTab, setActiveTab] = createSignal(keys[0]);
 
   onMount(() =>
-    toast.promise((async () => loadManifestsFromStorage())(), {
-      loading: "Loading saved manifests...",
-      success: "Loaded saved manifests",
-      error: "Failed to load saved manifests",
-    }),
+    setTimeout(() => {
+      toast.promise((async () => loadManifestsFromStorage())(), {
+        loading: "Loading saved manifests...",
+        success: "Loaded saved manifests",
+        error: "Failed to load saved manifests",
+      })
+    }, 100)
   );
 
   return (
