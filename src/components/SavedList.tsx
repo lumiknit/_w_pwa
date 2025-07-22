@@ -13,6 +13,7 @@ import {
 } from "../store";
 import toast from "solid-toast";
 import { copyText } from "../core/clipboard";
+import BulkUpdate from "./BulkUpdate";
 
 type ItemProps = {
   index: number;
@@ -36,10 +37,16 @@ const Item: Component<ItemProps> = (props) => {
 
   return (
     <fieldset role="group">
-      <button class={"break-all px-1" + ((manifest().start_url === props.manifest.start_url) ? "" : " outline")} onClick={handleSelect}>
+      <button
+        class={
+          "break-all px-1" +
+          (manifest().start_url === props.manifest.start_url ? "" : " outline")
+        }
+        onClick={handleSelect}
+      >
         <div class="hstack">
           <span>
-              <img src={props.manifest.icons[0]?.src} alt="(icon)" width={36} />
+            <img src={props.manifest.icons[0]?.src} alt="(icon)" width={36} />
           </span>
           <span>
             <b>{props.manifest.name}</b> <br />
@@ -88,6 +95,8 @@ const SavedList: Component = () => {
         />
         Copy and Open when Load
       </label>
+
+      <BulkUpdate />
 
       <For each={manifestList()}>
         {(m, i) => <Item index={i()} manifest={m} />}

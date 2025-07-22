@@ -65,8 +65,8 @@ const Importer: Component = () => {
 
   const handleAllSiteScript = async () => {
     const code = (await import("../core/raw/patch-script.js?raw")).default
-    .replace(/\n\s*/g, "")
-    .replace("\"$url\"", JSON.stringify(urlRef.value));
+      .replace(/\n\s*/g, "")
+      .replace('"$url"', JSON.stringify(urlRef.value));
     copyText(code);
     toast.success("Copied script to clipboard");
   };
@@ -94,7 +94,9 @@ const Importer: Component = () => {
       </fieldset>
 
       <div role="group">
-        <button onClick={handleImportClick}> <TbFileImport /> Import </button>
+        <button onClick={handleImportClick}>
+          <TbFileImport /> Import
+        </button>
         <button class="contrast" onClick={handleExportClick}>
           <TbFileExport />
           Export All
@@ -107,7 +109,8 @@ const Importer: Component = () => {
           Copy All Sites Script
         </button>
         <p>
-          This copies a script which can be used all sites in the list of the URL.
+          This copies a script which can be used all sites in the list of the
+          URL.
         </p>
       </div>
     </>

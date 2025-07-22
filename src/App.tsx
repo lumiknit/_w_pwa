@@ -28,8 +28,8 @@ const App: Component = () => {
         loading: "Loading saved manifests...",
         success: "Loaded saved manifests",
         error: "Failed to load saved manifests",
-      })
-    }, 100)
+      });
+    }, 100),
   );
 
   return (

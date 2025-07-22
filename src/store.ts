@@ -3,6 +3,7 @@
 import { createSignal, Setter } from "solid-js";
 import {
   defaultManifest,
+  Display,
   loadManifests,
   Manifest,
   sanitizeManifest,
@@ -75,4 +76,24 @@ export const monkeyCode = async () => {
   let code = (await import("./core/raw/monkey.js?raw")).default;
   code = code.replace("$manifests", JSON.stringify(manifestList()));
   return code;
+};
+
+/**
+ * Update all manifests in the list with new display mode and/or theme colors.
+ */
+export const bulkUpdateManifests = (options: {
+  display?: Display;
+  theme_color?: string;
+  background_color?: string;
+}) => {
+  setManifestList((manifests) =>
+    manifests.map((manifest) => ({
+      ...manifest,
+      ...(options.display && { display: options.display }),
+      ...(options.theme_color && { theme_color: options.theme_color }),
+      ...(options.background_color && {
+        background_color: options.background_color,
+      }),
+    })),
+  );
 };
