@@ -2,7 +2,12 @@ import { Component, createEffect, createSignal } from "solid-js";
 import CodeAccordion from "./CodeAccordion";
 import { manifest } from "../store";
 import toast from "solid-toast";
-import { makeChromeManifest, setCurrentPageManifest } from "../core";
+import {
+  makeChromeManifest,
+  setCurrentPageManifest,
+  cleanManifestForExport,
+  getOpenUrl,
+} from "../core";
 
 import { default as overrideCode } from "../core/raw/override-manifest.js?raw";
 import { copyText } from "../core/clipboard";
@@ -34,7 +39,11 @@ const SelfManifestView: Component = () => {
         items={[
           {
             title: "manifest.json",
-            content: JSON.stringify(manifest(), null, 2),
+            content: JSON.stringify(
+              cleanManifestForExport(manifest()),
+              null,
+              2,
+            ),
           },
           { title: "override.js", content: code() },
         ]}
@@ -46,7 +55,7 @@ const SelfManifestView: Component = () => {
         <a
           role="button"
           class="ml-1"
-          href={manifest().start_url}
+          href={getOpenUrl(manifest())}
           target="_blank"
         >
           <TbBrowser />

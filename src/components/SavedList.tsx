@@ -1,6 +1,12 @@
-import { TbScript, TbTrash, TbTrashFilled } from "solid-icons/tb";
+import {
+  TbScript,
+  TbTrash,
+  TbTrashFilled,
+  TbExternalLink,
+  TbWorldWww,
+} from "solid-icons/tb";
 import { Component, For } from "solid-js";
-import { Manifest } from "../core/index";
+import { Manifest, cleanManifestForExport, getOpenUrl } from "../core/index";
 import {
   clearAllManifests,
   copyOnSelect,
@@ -24,7 +30,7 @@ const Item: Component<ItemProps> = (props) => {
   const handleSelect = () => {
     openManifestFromList(props.index);
     if (copyOnSelect()) {
-      copyText(JSON.stringify(props.manifest, null, 2));
+      copyText(JSON.stringify(cleanManifestForExport(props.manifest), null, 2));
       toast.success("Manifest copied to clipboard.");
     }
     toast.success(`Using ${props.manifest.name}`);
@@ -33,6 +39,10 @@ const Item: Component<ItemProps> = (props) => {
   const handleDelete = () => {
     const m = delManifestFromList(props.index);
     toast.success(`Deleted ${m.name}`);
+  };
+
+  const handleOpen = () => {
+    window.open(getOpenUrl(props.manifest), "_blank");
   };
 
   return (
@@ -54,6 +64,9 @@ const Item: Component<ItemProps> = (props) => {
           </span>
         </div>
       </button>
+      <button class="flex-0 px-1 outline" onClick={handleOpen}>
+        <TbExternalLink />
+      </button>
       <button class="flex-0 px-1 outline" onClick={handleDelete}>
         <TbTrash />
       </button>
@@ -72,6 +85,13 @@ const SavedList: Component = () => {
     toast.success("Using Monkey");
   };
 
+  const handleOpenAllLinks = () => {
+    manifestList().forEach((manifest) => {
+      window.open(getOpenUrl(manifest), "_blank");
+    });
+    toast.success(`Opened ${manifestList().length} links`);
+  };
+
   return (
     <>
       <h2> Manifest List </h2>
@@ -84,6 +104,10 @@ const SavedList: Component = () => {
         <button type="button" class="ml-1" onClick={handleCopyForMonkey}>
           <TbScript />
           Copy Userscript
+        </button>
+        <button type="button" class="ml-1" onClick={handleOpenAllLinks}>
+          <TbWorldWww />
+          Open All Links
         </button>
       </div>
 

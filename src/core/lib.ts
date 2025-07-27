@@ -54,6 +54,10 @@ export const manifestSchema = z.object({
   theme_color: z.string(),
   icons: z.array(iconSchema),
   shortcuts: z.array(shortcutSchema),
+
+  // Non-manifest fields.
+  // This fields are used only for the Web UI.
+  _appliable_url: z.string().optional(),
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
@@ -149,8 +153,15 @@ export const setCurrentPageManifest = async (manifest: Manifest) => {
   toast.success("Manifest updated");
 };
 
+export const cleanManifestForExport = (manifest: Manifest) => {
+  const { _appliable_url, ...clean } = manifest;
+  return clean;
+};
+
 export const manifestListToString = (manifests: Manifest[]) => {
-  return manifests.map((m) => JSON.stringify(m)).join("\n");
+  return manifests
+    .map((m) => JSON.stringify(cleanManifestForExport(m)))
+    .join("\n");
 };
 
 export const stringToManifestList = (str: string): Manifest[] => {
@@ -236,3 +247,19 @@ export const getImageSizeAndMime = (url: string) =>
     };
     img.src = url;
   });
+
+export const getOpenUrl = (manifest: Manifest): string => {
+  if (manifest._appliable_url) {
+    if (manifest._appliable_url.startsWith("http")) {
+      return manifest._appliable_url;
+    }
+    try {
+      const baseUrl = new URL(manifest.start_url);
+      return new URL(manifest._appliable_url, baseUrl).toString();
+    } catch (e) {
+      console.warn("Failed to compose URL:", e);
+      return manifest.start_url;
+    }
+  }
+  return manifest.start_url;
+};

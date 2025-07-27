@@ -106,6 +106,21 @@ const ManifestEditor: Component = () => {
         />
       </label>
 
+      <label>
+        Appliable URL (optional)
+        <input
+          type="text"
+          placeholder="e.g. /favicon.ico or https://example.com/page"
+          value={manifest()._appliable_url || ""}
+          onChange={(e) =>
+            setManifest((m) => ({
+              ...m,
+              _appliable_url: e.target.value || undefined,
+            }))
+          }
+        />
+      </label>
+
       <div>
         Display / Color &nbsp;
         <label class="inline-block">

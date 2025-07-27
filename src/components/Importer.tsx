@@ -8,7 +8,7 @@ import {
 import toast from "solid-toast";
 import { copyText } from "../core/clipboard";
 import { manifestList, setManifestList } from "../store";
-import { TbCopy, TbFileExport, TbFileImport } from "solid-icons/tb";
+import { TbCopy, TbFileExport, TbFileImport, TbBookmark } from "solid-icons/tb";
 
 const Importer: Component = () => {
   const [title, setTitle] = createSignal("Imported / Exported JSON");
@@ -63,11 +63,14 @@ const Importer: Component = () => {
     });
   };
 
-  const handleAllSiteScript = async () => {
-    const code = (await import("../core/raw/patch-script.js?raw")).default
+  const allSiteScript = async () =>
+    (await import("../core/raw/patch-script.js?raw")).default
       .replace(/\n\s*/g, "")
       .replace('"$url"', JSON.stringify(urlRef.value));
-    copyText(code);
+
+  const handleAllSiteScript = async () => {
+    const code = await allSiteScript();
+    copyText("javascript:" + code);
     toast.success("Copied script to clipboard");
   };
 
